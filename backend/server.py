@@ -1,9 +1,8 @@
-from flask import Flask, jsonify, render_template
+from flask import Flask, jsonify
 from flask_cors import CORS
 import requests
 import numpy as np
 import pandas as pd
-from alpha_vantage.timeseries import TimeSeries
 
 app = Flask(__name__)
 CORS(app)  
@@ -15,12 +14,10 @@ FEATURED_SYMBOLS = [
     "JNJ", "V", "MA", "BAC", "WMT", "NVAX", "PG", "KO", "T", "INTU", "IBM", "NOW"
 ]
 
-ts = TimeSeries(API_KEY, output_format='pandas')
-
 
 @app.route('/')
 def homepage():
-    return render_template('index.html') 
+    return "Welcome to WealthWise - Your trusted platform for managing your investment portfolio"
 
 @app.route('/portfolio/<user_id>')
 def get_portfolio(user_id):
