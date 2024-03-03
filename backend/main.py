@@ -5,7 +5,7 @@ import numpy as np
 import pandas as pd
 
 app = Flask(__name__)
-CORS(app)  
+CORS(app, resources={r"/*": {"origins": "http://localhost:3000"}})
 
 API_KEY = "09I1ESM2FDLI0Y6D"
 FEATURED_SYMBOLS = [
@@ -77,6 +77,7 @@ def get_symbol_data(symbol):
     
     return jsonify({"error_message": "Failed to fetch data from Alpha Vantage API"}), 500
 
+
 # Function to calculate portfolio value
 def calculate_portfolio_value(symbols, weights=None):
     total_value = 0.0
@@ -99,4 +100,4 @@ def get_latest_close_price(symbol):
     return None
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run(host='127.0.0.1', port=5000, debug=True)

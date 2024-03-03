@@ -67,7 +67,7 @@ const Homepage = () => {
       "IBM",
       "NOW",
     ]);
-  }, []);
+  }, [portfolioSymbols]);
 
   return (
     <div>
