@@ -33,7 +33,7 @@ const Portfolio = () => {
           </Link>
         ))}
       </div>
-      <br /> {/* Add a line break */}
+      <br />
       {totalPortfolioValue && (
         <p>Total Portfolio Value: {totalPortfolioValue}</p>
       )}
