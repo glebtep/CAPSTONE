@@ -1,39 +1,61 @@
-from flask import Flask, jsonify
+from flask import Flask, jsonify, Response
 from flask_cors import CORS
 import requests
 
 app = Flask(__name__)
-CORS(app, resources={r"/*": {"origins": "http://localhost:3000"}})
+CORS(app)
 
 API_KEY = "09I1ESM2FDLI0Y6D"
-FEATURED_SYMBOLS = [
-    "AAPL", "MSFT", "GOOGL", "TSLA", "NVDA", "PYPL", "AMZN", "MCD", "NFLX",
-    "AMD", "INTC", "CRM", "DIS", "BABA", "UBER", "SQ", "ADBE", "PEP",
-    "JNJ", "V", "MA", "BAC", "WMT", "NVAX", "PG", "KO", "T", "INTU", "IBM", "NOW"
-]
+STOCK_DATA_URL = "https://www.alphavantage.co/query"
+MAX_STOCKS = 11111
 
+DATABASE = {
+        "user1": {"symbols": ["AAPL", "MSFT", "GOOGL", "TSLA", "NVDA", "PYPL"], "quantities": {"AAPL": 10, "MSFT": 4, "GOOGL": 5, "TSLA": 3, "NVDA": 8, "PYPL": 7} },
+        "user2": {"symbols": ["AMZN", "MCD", "NFLX", "AMD", "INTC", "CRM"], "quantities": {"AMZN": 15, "MCD": 10, "NFLX": 8, "AMD": 12, "INTC": 6, "CRM": 9}},
+        "user3": {"symbols": ["DIS", "BABA", "UBER", "SQ", "ADBE", "PEP"], "quantities": {"DIS": 20, "BABA": 14, "UBER": 11, "SQ": 8, "ADBE": 15, "PEP": 13}},
+        "user4": {"symbols": ["JNJ", "V", "MA", "BAC", "WMT", "NVAX"], "quantities": {"JNJ": 25, "V": 18, "MA": 16, "BAC": 21, "WMT": 23, "NVAX": 11}},
+        "user5": {"symbols": ["PG", "KO", "T", "INTU", "IBM", "NOW"], "quantities": {"PG": 22, "KO": 17, "T": 14, "INTU": 19, "IBM": 20, "NOW": 16}}
+    }
 
 @app.route('/')
 def homepage():
     return "Welcome to WealthWise - Your trusted platform for managing your investment portfolio"
 
+@app.route('/all-stocks')
+def get_all_stocks():
+    url = f"{STOCK_DATA_URL}?function=LISTING_STATUS&apikey={API_KEY}"
+    try:
+        def generate():
+            with requests.get(url, stream=True) as r:
+                r.raise_for_status()  
+                lines = r.iter_lines()
+                for _ in range(MAX_STOCKS):
+                    try:
+                        yield next(lines) + b'\n'
+                    except StopIteration:
+                        break
+        return Response(generate(), content_type='text/csv')
+    except requests.exceptions.HTTPError as errh:
+        print("Http Error:", errh)
+        return jsonify(error=str(errh)), errh.response.status_code
+    except requests.exceptions.ConnectionError as errc:
+        print("Error Connecting:", errc)
+        return jsonify(error=str(errc)), 503
+    except requests.exceptions.Timeout as errt:
+        print("Timeout Error:", errt)
+        return jsonify(error=str(errt)), 504
+    except requests.exceptions.RequestException as err:
+        print("Unknown error", err)
+        return jsonify(error=str(err)), 500
+    
 @app.route('/portfolio/<user_id>')
 def get_portfolio(user_id):
-    DATABASE = {
-        "user1": {"symbols": ["AAPL", "MSFT", "GOOGL", "TSLA", "NVDA", "PYPL"]},
-        "user2": {"symbols": ["AMZN", "MCD", "NFLX", "AMD", "INTC", "CRM"]},
-        "user3": {"symbols": ["DIS", "BABA", "UBER", "SQ", "ADBE", "PEP"]},
-        "user4": {"symbols": ["JNJ", "V", "MA", "BAC", "WMT", "NVAX"]},
-        "user5": {"symbols": ["PG", "KO", "T", "INTU", "IBM", "NOW"]}
-    }
-    
     if user_id in DATABASE:
-        symbols = DATABASE[user_id]["symbols"]
-        weights = None
-        total_portfolio_value = calculate_portfolio_value(symbols, weights)
+        portfolio_data = DATABASE[user_id]["quantities"]
+        total_portfolio_value = calculate_total_portfolio_value(portfolio_data)
         return jsonify({
             "user_id": user_id,
-            "symbols": symbols,
+            "portfolio_data": portfolio_data,
             "total_portfolio_value": total_portfolio_value
         })
     else:
@@ -99,13 +121,12 @@ def get_symbol_data(symbol):
     return jsonify({"error_message": "Failed to fetch data from Alpha Vantage API"}), 500
 
 # Function to calculate portfolio value
-def calculate_portfolio_value(symbols, weights=None):
-    total_value = 0.0
-    for symbol in symbols:
+def calculate_total_portfolio_value(portfolio_data):
+    total_value = 0
+    for symbol, quantity in portfolio_data.items():
         latest_close_price = get_latest_close_price(symbol)
         if latest_close_price is not None:
-            weight = weights[symbol] if weights and symbol in weights else 1.0 / len(symbols)
-            total_value += latest_close_price * weight
+            total_value += latest_close_price * quantity
     return total_value
 
 # Function to fetch the latest close price of a symbol
