@@ -10,7 +10,7 @@ const Portfolio = () => {
     const fetchPortfolioData = async () => {
       try {
         const response = await axios.get(
-          `http://127.0.0.1:5000/portfolio/${user_id}`
+          `http://mcsbt-integration-glebtep.oa.r.appspot.com/portfolio/${user_id}`
         );
         setPortfolioData(response.data);
       } catch (error) {

@@ -28,7 +28,9 @@ const Homepage = () => {
 
     const fetchStocks = async () => {
       try {
-        const response = await axios.get("http://127.0.0.1:5000/all-stocks");
+        const response = await axios.get(
+          "http://mcsbt-integration-glebtep.oa.r.appspot.com/all-stocks"
+        );
         const parsedData = parseCSV(response.data);
         setAllStocks(parsedData);
         setFilteredStocks(parsedData);
