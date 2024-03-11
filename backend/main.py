@@ -1,4 +1,4 @@
-from flask import Flask, jsonify, Response
+from flask import Flask, jsonify, Response, request
 from flask_cors import CORS
 import requests
 
@@ -7,15 +7,10 @@ CORS(app)
 
 API_KEY = "09I1ESM2FDLI0Y6D"
 STOCK_DATA_URL = "https://www.alphavantage.co/query"
-MAX_STOCKS = 11111
+MAX_STOCKS = 777
 
-DATABASE = {
-        "user1": {"symbols": ["AAPL", "MSFT", "GOOGL", "TSLA", "NVDA", "PYPL"], "quantities": {"AAPL": 10, "MSFT": 4, "GOOGL": 5, "TSLA": 3, "NVDA": 8, "PYPL": 7} },
-        "user2": {"symbols": ["AMZN", "MCD", "NFLX", "AMD", "INTC", "CRM"], "quantities": {"AMZN": 15, "MCD": 10, "NFLX": 8, "AMD": 12, "INTC": 6, "CRM": 9}},
-        "user3": {"symbols": ["DIS", "BABA", "UBER", "SQ", "ADBE", "PEP"], "quantities": {"DIS": 20, "BABA": 14, "UBER": 11, "SQ": 8, "ADBE": 15, "PEP": 13}},
-        "user4": {"symbols": ["JNJ", "V", "MA", "BAC", "WMT", "NVAX"], "quantities": {"JNJ": 25, "V": 18, "MA": 16, "BAC": 21, "WMT": 23, "NVAX": 11}},
-        "user5": {"symbols": ["PG", "KO", "T", "INTU", "IBM", "NOW"], "quantities": {"PG": 22, "KO": 17, "T": 14, "INTU": 19, "IBM": 20, "NOW": 16}}
-    }
+#Dynamic portfolio
+portfolio = []
 
 @app.route('/')
 def homepage():
@@ -48,18 +43,44 @@ def get_all_stocks():
         print("Unknown error", err)
         return jsonify(error=str(err)), 500
     
-@app.route('/portfolio/<user_id>')
-def get_portfolio(user_id):
-    if user_id in DATABASE:
-        portfolio_data = DATABASE[user_id]["quantities"]
-        total_portfolio_value = calculate_total_portfolio_value(portfolio_data)
-        return jsonify({
-            "user_id": user_id,
-            "portfolio_data": portfolio_data,
-            "total_portfolio_value": total_portfolio_value
-        })
+@app.route('/portfolio', methods=['GET'])
+def get_portfolio():
+    return jsonify({"portfolio": portfolio})
+
+@app.route('/add-to-portfolio', methods=['POST'])
+def add_to_portfolio():
+    data = request.json
+    symbol = data.get('symbol')
+    quantity = int(data.get('quantity', 0))
+
+    if not symbol or quantity <= 0:
+        return jsonify({"error": "Invalid symbol or quantity"}), 400
+
+    stock = next((item for item in portfolio if item['symbol'] == symbol), None)
+
+    if stock:
+        # Update quantity for the existing stock
+        stock['quantity'] += quantity
     else:
-        return jsonify({"error_message": "User not found"}), 404
+        # Add a new stock to the portfolio
+        portfolio.append({'symbol': symbol, 'quantity': quantity})
+
+    return jsonify({"message": "Stock updated in the portfolio successfully"}), 200
+
+@app.route('/delete-from-portfolio', methods=['POST'])
+def delete_from_portfolio():
+    data = request.json
+    symbol = data.get('symbol')
+
+    stock_index = next((index for (index, d) in enumerate(portfolio) if d['symbol'] == symbol), None)
+
+    if stock_index is not None:
+        # Remove the stock from the portfolio
+        del portfolio[stock_index]
+        return jsonify({"message": "Stock removed from the portfolio successfully"}), 200
+    else:
+        return jsonify({"error": "Stock not found in the portfolio"}), 404
+    
 
 @app.route('/symbol/<symbol>')
 def get_symbol_data(symbol):
@@ -120,25 +141,6 @@ def get_symbol_data(symbol):
     
     return jsonify({"error_message": "Failed to fetch data from Alpha Vantage API"}), 500
 
-# Function to calculate portfolio value
-def calculate_total_portfolio_value(portfolio_data):
-    total_value = 0
-    for symbol, quantity in portfolio_data.items():
-        latest_close_price = get_latest_close_price(symbol)
-        if latest_close_price is not None:
-            total_value += latest_close_price * quantity
-    return total_value
-
-# Function to fetch the latest close price of a symbol
-def get_latest_close_price(symbol):
-    global_quote_api_url = f"https://www.alphavantage.co/query?function=GLOBAL_QUOTE&symbol={symbol}&apikey={API_KEY}"
-    response = requests.get(global_quote_api_url)
-    if response.status_code == 200:
-        symbol_data = response.json()
-        if "Global Quote" in symbol_data:
-            latest_close_price = float(symbol_data["Global Quote"]["05. price"])
-            return latest_close_price
-    return None
 
 if __name__ == '__main__':
     app.run(debug=True)
