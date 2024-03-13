@@ -1,18 +1,12 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 
 const Homepage = () => {
-  const [portfolioSymbols, setPortfolioSymbols] = useState({
-    user1: [],
-    user2: [],
-    user3: [],
-    user4: [],
-    user5: [],
-  });
   const [allStocks, setAllStocks] = useState([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [filteredStocks, setFilteredStocks] = useState([]);
+  const navigate = useNavigate();
 
   useEffect(() => {
     const parseCSV = (data) => {
@@ -21,7 +15,7 @@ const Homepage = () => {
         .slice(1)
         .map((line) => {
           const [symbol, name] = line.split(",");
-          return { symbol, name };
+          return { symbol, name }; // Removed quantity property as it's not needed for listing
         })
         .filter((stock) => stock.symbol && stock.name);
     };
@@ -52,6 +46,26 @@ const Homepage = () => {
     setFilteredStocks(filtered);
   };
 
+  const addToPortfolio = async (symbol, quantity) => {
+    // Ensure quantity is a positive number before sending the request
+    if (quantity > 0) {
+      try {
+        await axios.post(
+          "http://mcsbt-integration-glebtep.oa.r.appspot.com/add-to-portfolio",
+          {
+            symbol,
+            quantity,
+          }
+        );
+        navigate("/portfolio"); // Redirect to portfolio page to view added stock
+      } catch (error) {
+        console.error("Error adding stock to portfolio:", error);
+      }
+    } else {
+      alert("Please enter a valid quantity.");
+    }
+  };
+
   return (
     <div>
       <h1>Welcome to WealthWise</h1>
@@ -60,30 +74,69 @@ const Homepage = () => {
       <div>
         <input
           type="text"
+          className="stock-search-input"
           placeholder="Search by symbol or name"
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
         />
         <button onClick={handleSearch}>Search</button>
       </div>
+      <br></br>
+      <Link to="/portfolio">
+        <button>My Portfolio</button>
+      </Link>
 
-      <h2>User Portfolios</h2>
-      <div className="portfolio-buttons">
-        {Object.keys(portfolioSymbols).map((user) => (
-          <Link key={user} to={`/portfolio/${user}`}>
-            <button>{user}</button>
-          </Link>
-        ))}
-      </div>
-
-      <h2>11,111 Stocks available: </h2>
+      <h2>777 Stocks Available:</h2>
       <div>
         {filteredStocks.map((stock, index) => (
-          <Link key={index} to={`/symbol/${stock.symbol}`}>
-            <button>{stock.symbol}</button>
-          </Link>
+          <div
+            key={index}
+            className="stock-item"
+            style={{ marginBottom: "10px" }}
+          >
+            <Link to={`/symbol/${stock.symbol}`}>
+              <button style={{ marginRight: "5px" }}>{stock.symbol}</button>
+            </Link>
+            <div className="stock-quantity-container">
+              <input
+                type="number"
+                className="stock-quantity-input"
+                min="1"
+                defaultValue="0"
+                onChange={(e) => {
+                  stock.quantity = parseInt(e.target.value) || 0;
+                }}
+              />
+              <button
+                onClick={() => addToPortfolio(stock.symbol, stock.quantity)}
+              >
+                Add to Portfolio
+              </button>
+            </div>
+          </div>
         ))}
       </div>
+
+      <footer className="footer">
+        <div className="footer-content">
+          <div className="footer-section">
+            <h3>About Us</h3>
+            <p>
+              We are dedicated to providing the best investment portfolio
+              management experience. Our platform allows users to track and
+              optimize their investments with ease and precision.
+            </p>
+          </div>
+          <div className="footer-section">
+            <h3>Contact Info</h3>
+            <p>Email: contact@wealthwise.com</p>
+            <p>Phone: +123 456 7890</p>
+          </div>
+        </div>
+        <div className="footer-bottom">
+          <p>&copy; 2024 WealthWise, Inc. All rights reserved.</p>
+        </div>
+      </footer>
     </div>
   );
 };

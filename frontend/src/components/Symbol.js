@@ -35,10 +35,10 @@ function StockGraph({ data }) {
         <YAxis domain={yAxisDomain} />
         <Tooltip />
         <Legend />
-        <Line type="monotone" dataKey="open" stroke="#8884d8" name="Open" />
-        <Line type="monotone" dataKey="high" stroke="#82ca9d" name="High" />
-        <Line type="monotone" dataKey="low" stroke="#ffc658" name="Low" />
-        <Line type="monotone" dataKey="close" stroke="#ff7300" name="Close" />
+        <Line type="monotone" dataKey="open" stroke="#A8A9AD" name="Open" />
+        <Line type="monotone" dataKey="high" stroke="#FFD700" name="High" />
+        <Line type="monotone" dataKey="low" stroke="#800020" name="Low" />
+        <Line type="monotone" dataKey="close" stroke="#0F52BA" name="Close" />
       </LineChart>
     </ResponsiveContainer>
   );
@@ -74,7 +74,30 @@ function Symbol() {
       <p>Volume: {symbolData.volume}</p>
       <h2>Stock Price History</h2>
       <StockGraph data={symbolData.data} />
-      <Link to="/">Go to Homepage</Link>
+      <Link to="/">
+        <button style={{ cursor: "pointer" }}>Go to Homepage</button>
+      </Link>
+
+      <footer className="footer">
+        <div className="footer-content">
+          <div className="footer-section">
+            <h3>About Us</h3>
+            <p>
+              We are dedicated to providing the best investment portfolio
+              management experience. Our platform allows users to track and
+              optimize their investments with ease and precision.
+            </p>
+          </div>
+          <div className="footer-section">
+            <h3>Contact Info</h3>
+            <p>Email: contact@wealthwise.com</p>
+            <p>Phone: +123 456 7890</p>
+          </div>
+        </div>
+        <div className="footer-bottom">
+          <p>&copy; 2024 WealthWise, Inc. All rights reserved.</p>
+        </div>
+      </footer>
     </div>
   );
 }

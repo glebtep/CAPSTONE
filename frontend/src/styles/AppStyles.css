@@ -1,0 +1,185 @@
+body {
+  background-color: #ffffff; /* Main background is white */
+  color: #000000; /* Main text color is black */
+  font-family: "Arial", sans-serif;
+  margin: 0;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Typography */
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  color: #800020; /* Burgundy for headings */
+  font-weight: bold;
+}
+
+p,
+li,
+a,
+span {
+  color: #000000; /* Text color is black */
+}
+
+a {
+  color: #800020; /* Burgundy for links */
+  text-decoration: none;
+}
+
+a:hover {
+  color: #000000; /* Black for hover, making the transition subtle */
+}
+
+/* Navigation */
+.navbar {
+  background-color: #ffffff; /* Navbar is white */
+  color: #000000;
+  padding: 10px 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); /* Subtle shadow for depth */
+}
+
+.navbar a {
+  color: #000000; /* Black text for navbar links */
+  margin-left: 20px;
+}
+
+.navbar a:hover {
+  color: #800020; /* Burgundy on hover */
+}
+
+/* Content Layout */
+.hero-section {
+  background-color: #ffffff; /* Background for hero section is white */
+  color: #800020; /* Burgundy text for emphasis */
+  padding: 40px 20px;
+  text-align: center;
+}
+
+.card {
+  background-color: #ffffff; /* Cards are white */
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Shadow for depth */
+  margin: 20px;
+  padding: 20px;
+}
+
+/* Stock Graphs */
+.graph-container {
+  background-color: #ffffff; /* White background for graph container */
+  padding: 20px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05); /* Lighter shadow for subtlety */
+}
+
+/* Footer */
+.footer {
+  background-color: #000000; /* Footer background is black */
+  color: #ffffff; /* Text color in footer is white */
+  padding: 20px;
+  text-align: center;
+  position: relative;
+}
+
+.footer-content {
+  display: flex;
+  justify-content: space-around;
+}
+
+.footer-section h3,
+.footer-bottom a {
+  color: #800020; /* Burgundy for footer headings and links */
+}
+
+.footer-section p,
+.footer-bottom p {
+  color: #ffffff; /* White text for readability */
+}
+
+.social-icons a {
+  color: #800020; /* Burgundy for social icons */
+  margin: 0 10px;
+}
+
+.footer-bottom {
+  border-top: 1px solid #800020; /* Burgundy border top for separation */
+  padding-top: 10px;
+}
+
+.footer-bottom a:hover {
+  text-decoration: underline; /* Maintain white color but underline on hover */
+}
+
+/* User Interface Elements */
+button,
+input[type="submit"] {
+  background-color: #000000; /* Buttons are black */
+  color: #ffffff; /* Text on buttons is white */
+  border: none;
+  padding: 10px 20px;
+  margin: 5px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+button:hover,
+input[type="submit"]:hover {
+  background-color: #800020; /* Burgundy for button hover */
+}
+
+input[type="number"] {
+  border: 1px solid #800020; /* Burgundy border for input */
+  padding: 10px;
+  margin: 5px;
+  width: calc(100% - 24px); /* Ensure full width taking padding into account */
+}
+
+/* Interactivity and Responsiveness */
+@media (max-width: 768px) {
+  .navbar,
+  .hero-section,
+  .card,
+  .footer {
+    flex-direction: column;
+  }
+
+  .navbar a {
+    margin: 10px 0;
+  }
+}
+
+.stock-search-input {
+  width: 80%; /* Adjust width as needed */
+  padding: 10px;
+  margin: 10px 0; /* Add some vertical spacing */
+  border: 2px solid #800020; /* Burgundy border for emphasis */
+}
+
+.stock-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+}
+
+.stock-quantity-container {
+  display: flex;
+  align-items: center;
+  flex-grow: 1;
+  justify-content: flex-end;
+}
+
+.stock-quantity-input {
+  width: auto;
+  padding: 5px;
+  margin-right: 5px; /* Space between input and button */
+}
+
+.add-to-portfolio-btn {
+  padding: 5px 10px; /* Adjust padding as needed */
+}
