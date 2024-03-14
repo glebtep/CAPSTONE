@@ -1,12 +1,16 @@
 from flask_sqlalchemy import SQLAlchemy
 from datetime import datetime
-from flask_bcrypt import generate_password_hash, checkpytpassword_hash
+from flask_bcrypt import generate_password_hash, check_password_hash
+from sqlalchemy import Sequence
+
 
 db = SQLAlchemy()
 
+user_id_seq = Sequence('user_id_seq', metadata=db.metadata)
+
 class User(db.Model):
     __tablename__ = 'users'
-    user_id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, user_id_seq, server_default=user_id_seq.next_value(), primary_key=True)
     name = db.Column(db.String(100), nullable=False)
     password_hash = db.Column(db.String(256), nullable=False)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
@@ -18,7 +22,6 @@ class User(db.Model):
         self.password_hash = generate_password_hash(password).decode('utf-8') if isinstance(generate_password_hash(password), bytes) else generate_password_hash(password)
 
     def check_password(self, password):
-        # Check the entered password against the stored hash
         return check_password_hash(self.password_hash, password)
 
 class Stock(db.Model):

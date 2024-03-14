@@ -61,6 +61,11 @@ const Homepage = () => {
     }
   };
 
+  const handleLogout = async () => {
+    localStorage.removeItem("token");
+    navigate("/login"); // Redirect to the login page
+  };
+
   return (
     <div>
       <h1>Welcome to WealthWise</h1>
@@ -80,6 +85,9 @@ const Homepage = () => {
       <Link to="/portfolio">
         <button>My Portfolio</button>
       </Link>
+      <button onClick={handleLogout} style={{ float: "right", margin: "10px" }}>
+        Logout
+      </button>
 
       <h2>777 Stocks Available:</h2>
       <div>

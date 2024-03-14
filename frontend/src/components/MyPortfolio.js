@@ -34,7 +34,11 @@ const MyPortfolio = () => {
   useEffect(() => {
     const fetchPortfolioData = async () => {
       try {
-        const response = await axios.get(`http://127.0.0.1:5000/portfolio`);
+        const response = await axios.get(`http://127.0.0.1:5000/portfolio`, {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+        });
         const portfolioData = response.data.portfolio || [];
         setPortfolio(portfolioData);
         calculateTotalPortfolioValue(portfolioData);
@@ -63,7 +67,7 @@ const MyPortfolio = () => {
 
   const addMoreStock = async (symbol, quantity) => {
     try {
-      await axios.post(`http://127.0.0.1:5000/add-to-portfolio`, {
+      await axios.post(`http://127.0.0.1:5000p/add-to-portfolio`, {
         symbol,
         quantity,
       });

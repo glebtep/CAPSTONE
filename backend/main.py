@@ -1,22 +1,28 @@
-from flask import Flask, jsonify, Response, request
+from flask import Flask, jsonify, Response, request, session
 from flask_cors import CORS
 import requests
 from models import db, Portfolio, PortfolioStock, Stock, User
 from sqlalchemy.pool import NullPool
 import oracledb
+from flask_bcrypt import Bcrypt
+from flask_jwt_extended import create_access_token, jwt_required, JWTManager
+
 app = Flask(__name__)
+bcrypt = Bcrypt(app)
+app.config['JWT_SECRET_KEY'] = b'0S=\xa0\xa8trRj\x8e\xe5\xf2\x87\xefLC\xbb\x08\xed\xf1\xccF\xe8\xa5'
+jwt = JWTManager(app) 
+
 CORS(app)
 
 #Copied from LAB
-un = 'ADMIN'
-pw = 'dawvic-hotjy9-mEzbum'
+un = 'MYOWNSH'
+pw = 'AaZZ0r_cle#1'
 dsn = '(description= (retry_count=20)(retry_delay=3)(address=(protocol=tcps)(port=1522)(host=adb.eu-madrid-1.oraclecloud.com))(connect_data=(service_name=g2148b2691cdb11_capstone_high.adb.oraclecloud.com))(security=(ssl_server_dn_match=yes)))'
 
 pool = oracledb.create_pool(user=un, password=pw,
                             dsn=dsn)
 
-app.config['SQLALCHEMY_DATABASE_URI'] = 'oracle+oracledb://'
-app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+app.config['SQLALCHEMY_DATABASE_URI'] = 'oracle+oracledb://{un}:{pw}@{dsn}'
 app.config['SQLALCHEMY_ENGINE_OPTIONS'] = {
     'creator': pool.acquire,
     'poolclass': NullPool
@@ -163,6 +169,35 @@ def get_symbol_data(symbol):
     
     return jsonify({"error_message": "Failed to fetch data from Alpha Vantage API"}), 500
 
+#AUTHENTIFICATION 
+
+@app.route('/signup', methods=['POST'])
+def signup():
+    print("Login route hit")
+    data = request.json
+    user = User.query.filter_by(name=data['name']).first()
+    if user:
+        return jsonify({'message': 'User already exists'}), 400
+    new_user = User(name=data['name'])
+    new_user.set_password(data['password'])
+    db.session.add(new_user)
+    db.session.commit()
+    return jsonify({'message': 'User created successfully'}), 201
+
+@app.route('/login', methods=['POST'])
+def login():
+    data = request.json
+    user = User.query.filter_by(name=data['name']).first()
+    if user and user.check_password(data['password']):
+        access_token = create_access_token(identity=data['name'])
+        return jsonify(access_token=access_token), 200
+    return jsonify({'message': 'Invalid username or password'}), 401
+
+
+@app.route('/protected', methods=['GET'])
+@jwt_required()
+def protected():
+    return jsonify({'message': 'Access granted to protected route'})
 
 if __name__ == '__main__':
     app.run(debug=True)
