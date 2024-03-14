@@ -52,7 +52,7 @@ function Symbol() {
     const fetchData = async () => {
       try {
         const response = await axios.get(
-          `http://mcsbt-integration-glebtep.oa.r.appspot.com/symbol/${symbol}`
+          `http://127.0.0.1:5000/symbol/${symbol}`
         );
         const sortedData = response.data.data.reverse();
         setSymbolData({ ...response.data, data: sortedData });

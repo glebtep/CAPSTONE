@@ -34,3 +34,5 @@ tornado==6.3.3
 traitlets==5.11.2
 wcwidth==0.2.8
 Werkzeug==2.2.2
+oracledb==2.0.1
+SQLAlchemy==2.0.16

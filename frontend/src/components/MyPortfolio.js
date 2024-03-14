@@ -34,9 +34,7 @@ const MyPortfolio = () => {
   useEffect(() => {
     const fetchPortfolioData = async () => {
       try {
-        const response = await axios.get(
-          `http://mcsbt-integration-glebtep.oa.r.appspot.com/portfolio`
-        );
+        const response = await axios.get(`http://127.0.0.1:5000/portfolio`);
         const portfolioData = response.data.portfolio || [];
         setPortfolio(portfolioData);
         calculateTotalPortfolioValue(portfolioData);
@@ -50,12 +48,9 @@ const MyPortfolio = () => {
 
   const deleteStock = async (symbol) => {
     try {
-      await axios.post(
-        `http://mcsbt-integration-glebtep.oa.r.appspot.com/delete-from-portfolio`,
-        {
-          symbol,
-        }
-      );
+      await axios.post(`http://127.0.0.1:5000/delete-from-portfolio`, {
+        symbol,
+      });
       const updatedPortfolio = portfolio.filter(
         (item) => item.symbol !== symbol
       );
@@ -68,13 +63,10 @@ const MyPortfolio = () => {
 
   const addMoreStock = async (symbol, quantity) => {
     try {
-      await axios.post(
-        `http://mcsbt-integration-glebtep.oa.r.appspot.com/add-to-portfolio`,
-        {
-          symbol,
-          quantity,
-        }
-      );
+      await axios.post(`http://127.0.0.1:5000/add-to-portfolio`, {
+        symbol,
+        quantity,
+      });
       const updatedPortfolio = portfolio.map((item) => {
         if (item.symbol === symbol) {
           return { ...item, quantity: item.quantity + quantity };

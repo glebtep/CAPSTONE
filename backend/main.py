@@ -1,9 +1,31 @@
 from flask import Flask, jsonify, Response, request
 from flask_cors import CORS
 import requests
-
+from models import db, Portfolio, PortfolioStock, Stock, User
+from sqlalchemy.pool import NullPool
+import oracledb
 app = Flask(__name__)
 CORS(app)
+
+#Copied from LAB
+un = 'ADMIN'
+pw = 'dawvic-hotjy9-mEzbum'
+dsn = '(description= (retry_count=20)(retry_delay=3)(address=(protocol=tcps)(port=1522)(host=adb.eu-madrid-1.oraclecloud.com))(connect_data=(service_name=g2148b2691cdb11_capstone_high.adb.oraclecloud.com))(security=(ssl_server_dn_match=yes)))'
+
+pool = oracledb.create_pool(user=un, password=pw,
+                            dsn=dsn)
+
+app.config['SQLALCHEMY_DATABASE_URI'] = 'oracle+oracledb://'
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+app.config['SQLALCHEMY_ENGINE_OPTIONS'] = {
+    'creator': pool.acquire,
+    'poolclass': NullPool
+}
+app.config['SQLALCHEMY_ECHO'] = True
+db.init_app(app)
+
+with app.app_context():
+    db.create_all()
 
 API_KEY = "09I1ESM2FDLI0Y6D"
 STOCK_DATA_URL = "https://www.alphavantage.co/query"
