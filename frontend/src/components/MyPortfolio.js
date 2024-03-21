@@ -34,11 +34,14 @@ const MyPortfolio = () => {
   useEffect(() => {
     const fetchPortfolioData = async () => {
       try {
-        const response = await axios.get(`http://127.0.0.1:5000/portfolio`, {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem("token")}`,
-          },
-        });
+        const response = await axios.get(
+          `http://mcsbt-integration-glebtep.oa.r.appspot.com/portfolio`,
+          {
+            headers: {
+              Authorization: `Bearer ${localStorage.getItem("token")}`,
+            },
+          }
+        );
         const portfolioData = response.data.portfolio || [];
         setPortfolio(portfolioData);
         calculateTotalPortfolioValue(portfolioData);
@@ -52,9 +55,12 @@ const MyPortfolio = () => {
 
   const deleteStock = async (symbol) => {
     try {
-      await axios.post(`http://127.0.0.1:5000/delete-from-portfolio`, {
-        symbol,
-      });
+      await axios.post(
+        `http://mcsbt-integration-glebtep.oa.r.appspot.com/delete-from-portfolio`,
+        {
+          symbol,
+        }
+      );
       const updatedPortfolio = portfolio.filter(
         (item) => item.symbol !== symbol
       );
@@ -67,10 +73,13 @@ const MyPortfolio = () => {
 
   const addMoreStock = async (symbol, quantity) => {
     try {
-      await axios.post(`http://127.0.0.1:5000p/add-to-portfolio`, {
-        symbol,
-        quantity,
-      });
+      await axios.post(
+        `http://mcsbt-integration-glebtep.oa.r.appspot.com/add-to-portfolio`,
+        {
+          symbol,
+          quantity,
+        }
+      );
       const updatedPortfolio = portfolio.map((item) => {
         if (item.symbol === symbol) {
           return { ...item, quantity: item.quantity + quantity };
@@ -86,22 +95,37 @@ const MyPortfolio = () => {
 
   return (
     <div className="main-content">
-      <h1>My Portfolio</h1>
-      {portfolio.map((item, index) => (
-        <div key={index} style={{ marginBottom: "10px" }}>
-          <Link to={`/symbol/${item.symbol}`}>
-            <button style={{ marginRight: "5px" }}>{item.symbol}</button>
-          </Link>
-          <span style={{ marginRight: "15px" }}>
-            {" "}
-            Quantity: {item.quantity}
-          </span>
-          <button onClick={() => addMoreStock(item.symbol, 1)}>Add More</button>
-          <button onClick={() => deleteStock(item.symbol)}>Delete</button>
-        </div>
-      ))}
+      <h1 style={{ textAlign: "center" }}>Welcome to WealthWise</h1>
+      <p style={{ textAlign: "center" }}>
+        Your trusted platform for managing your investment portfolio.
+      </p>
+      <h2 style={{ textAlign: "center" }}>My Portfolio</h2>
+      <div
+        style={{
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "center",
+        }}
+      >
+        {portfolio.map((item, index) => (
+          <div key={index} style={{ marginBottom: "10px" }}>
+            <Link to={`/symbol/${item.symbol}`}>
+              <button style={{ marginRight: "5px" }}>{item.symbol}</button>
+            </Link>
+            <span style={{ marginRight: "15px" }}>
+              Quantity: {item.quantity}
+            </span>
+            <button onClick={() => addMoreStock(item.symbol, 1)}>
+              Add More
+            </button>
+            <button onClick={() => deleteStock(item.symbol)}>Delete</button>
+          </div>
+        ))}
+      </div>
       <br />
-      <p>Total Portfolio Value: ${totalPortfolioValue.toFixed(2)}</p>
+      <p style={{ textAlign: "center" }}>
+        Total Portfolio Value: ${totalPortfolioValue.toFixed(2)}
+      </p>
       <br />
       <Link to="/">
         <button style={{ cursor: "pointer" }}>Go to Homepage</button>

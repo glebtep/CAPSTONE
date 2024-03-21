@@ -183,3 +183,41 @@ input[type="number"] {
 .add-to-portfolio-btn {
   padding: 5px 10px; /* Adjust padding as needed */
 }
+
+/* CSS for login and signup pages */
+/* Add these styles to your CSS file */
+.form-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+}
+
+.form-box {
+  width: 300px;
+  padding: 20px;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+  border-radius: 5px;
+}
+
+.form-field {
+  width: 100%;
+  padding: 10px;
+  margin-bottom: 15px;
+  border-radius: 5px;
+  border: 1px solid #ccc;
+}
+
+.form-button {
+  width: 100%;
+  padding: 10px;
+  border-radius: 5px;
+  border: none;
+  background-color: #000000; /* Black background for the button */
+  color: #ffffff; /* White text */
+  cursor: pointer;
+}
+
+.form-button:hover {
+  background-color: #800020; /* Burgundy for button hover */
+}

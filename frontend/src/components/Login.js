@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 
-function Login() {
+function Login({ setIsLoggedIn }) {
   const [name, setName] = useState("");
   const [password, setPassword] = useState("");
 
@@ -11,13 +11,17 @@ function Login() {
   const handleLogin = async (e) => {
     e.preventDefault();
     try {
-      const response = await axios.post("http://127.0.0.1:5000/login", {
-        name,
-        password,
-      });
+      const response = await axios.post(
+        "http://mcsbt-integration-glebtep.oa.r.appspot.com/login",
+        {
+          name,
+          password,
+        }
+      );
       console.log(response.data.message);
       // Redirect to homepage or another protected route
       localStorage.setItem("token", response.data.access_token);
+      setIsLoggedIn(true);
       // Redirect to homepage or another protected route
       navigate("/");
     } catch (error) {
@@ -31,25 +35,36 @@ function Login() {
   };
 
   return (
-    <div>
-      <form onSubmit={handleLogin}>
-        <input
-          type="text"
-          value={name}
-          onChange={(e) => setName(e.target.value)}
-          placeholder="Username"
-        />
-        <input
-          type="password"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          placeholder="Password"
-        />
-        <button type="submit">Login</button>
-        <button type="button" onClick={() => navigate("/signup")}>
-          Sign Up
-        </button>
-      </form>
+    <div className="form-container">
+      <div className="form-box">
+        <h1 style={{ textAlign: "center" }}>WealthWise</h1>
+        <form onSubmit={handleLogin}>
+          <input
+            type="text"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            placeholder="Username"
+            className="form-field"
+          />
+          <input
+            type="password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            placeholder="Password"
+            className="form-field"
+          />
+          <button type="submit" className="form-button">
+            Login
+          </button>
+          <button
+            type="button"
+            onClick={() => navigate("/signup")}
+            className="form-button"
+          >
+            Sign Up
+          </button>
+        </form>
+      </div>
     </div>
   );
 }

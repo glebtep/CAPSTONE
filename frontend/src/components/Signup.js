@@ -8,10 +8,13 @@ function Signup() {
   const handleSignup = async (e) => {
     e.preventDefault();
     try {
-      const response = await axios.post("http://127.0.0.1:5000/signup", {
-        name,
-        password,
-      });
+      const response = await axios.post(
+        "http://mcsbt-integration-glebtep.oa.r.appspot.com/signup",
+        {
+          name,
+          password,
+        }
+      );
       console.log(response.data.message);
       window.location.href = "/login";
       // Redirect to login page or elsewhere after successful signup
@@ -24,22 +27,29 @@ function Signup() {
   };
 
   return (
-    <div>
-      <form onSubmit={handleSignup}>
-        <input
-          type="text"
-          value={name}
-          onChange={(e) => setName(e.target.value)}
-          placeholder="Username"
-        />
-        <input
-          type="password"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          placeholder="Password"
-        />
-        <button type="submit">Sign Up</button>
-      </form>
+    <div className="form-container">
+      <div className="form-box">
+        <h1 style={{ textAlign: "center" }}>WealthWise</h1>
+        <form onSubmit={handleSignup}>
+          <input
+            type="text"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            placeholder="Username"
+            className="form-field"
+          />
+          <input
+            type="password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            placeholder="Password"
+            className="form-field"
+          />
+          <button type="submit" className="form-button">
+            Sign Up
+          </button>
+        </form>
+      </div>
     </div>
   );
 }

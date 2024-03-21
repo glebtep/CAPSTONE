@@ -52,7 +52,7 @@ function Symbol() {
     const fetchData = async () => {
       try {
         const response = await axios.get(
-          `http://127.0.0.1:5000/symbol/${symbol}`
+          `http://mcsbt-integration-glebtep.oa.r.appspot.com/symbol/${symbol}`
         );
         const sortedData = response.data.data.reverse();
         setSymbolData({ ...response.data, data: sortedData });
@@ -68,11 +68,15 @@ function Symbol() {
 
   return (
     <div>
-      <h1>Stock Details for: {symbolData.symbol}</h1>
+      <h1 style={{ textAlign: "center" }}>Welcome to WealthWise</h1>
+      <p style={{ textAlign: "center" }}>
+        Your trusted platform for managing your investment portfolio.
+      </p>
+      <h2>Stock Details for: {symbolData.symbol}</h2>
       <p>Last Refreshed: {symbolData.last_refreshed}</p>
       <p>Latest Close Price: {symbolData.latest_close_price}</p>
       <p>Volume: {symbolData.volume}</p>
-      <h2>Stock Price History</h2>
+      <h3>Stock Price History</h3>
       <StockGraph data={symbolData.data} />
       <Link to="/">
         <button style={{ cursor: "pointer" }}>Go to Homepage</button>

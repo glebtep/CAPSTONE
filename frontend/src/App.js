@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import {
-  BrowserRouter as Router,
+  HashRouter as Router,
   Route,
   Routes,
   Navigate,
@@ -17,9 +17,7 @@ function App() {
 
   useEffect(() => {
     const token = localStorage.getItem("token");
-    if (token) {
-      setIsLoggedIn(true);
-    }
+    setIsLoggedIn(!!token);
   }, []);
 
   return (
@@ -30,7 +28,10 @@ function App() {
           element={isLoggedIn ? <Homepage /> : <Navigate to="/login" />}
           exact
         />
-        <Route path="/login" element={<Login />} />
+        <Route
+          path="/login"
+          element={<Login setIsLoggedIn={setIsLoggedIn} />}
+        />
         <Route
           path="/portfolio"
           element={isLoggedIn ? <MyPortfolio /> : <Navigate to="/login" />}

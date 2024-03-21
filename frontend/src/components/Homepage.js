@@ -22,7 +22,9 @@ const Homepage = () => {
 
     const fetchStocks = async () => {
       try {
-        const response = await axios.get("http://127.0.0.1:5000/all-stocks");
+        const response = await axios.get(
+          "http://mcsbt-integration-glebtep.oa.r.appspot.com/all-stocks"
+        );
         const parsedData = parseCSV(response.data);
         setAllStocks(parsedData);
         setFilteredStocks(parsedData);
@@ -48,10 +50,13 @@ const Homepage = () => {
     // Ensure quantity is a positive number before sending the request
     if (quantity > 0) {
       try {
-        await axios.post("http://127.0.0.1:5000/add-to-portfolio", {
-          symbol,
-          quantity,
-        });
+        await axios.post(
+          "http://mcsbt-integration-glebtep.oa.r.appspot.com/add-to-portfolio",
+          {
+            symbol,
+            quantity,
+          }
+        );
         navigate("/portfolio"); // Redirect to portfolio page to view added stock
       } catch (error) {
         console.error("Error adding stock to portfolio:", error);
@@ -68,8 +73,10 @@ const Homepage = () => {
 
   return (
     <div>
-      <h1>Welcome to WealthWise</h1>
-      <p>Your trusted platform for managing your investment portfolio.</p>
+      <h1 style={{ textAlign: "center" }}>Welcome to WealthWise</h1>
+      <p style={{ textAlign: "center" }}>
+        Your trusted platform for managing your investment portfolio.
+      </p>
 
       <div>
         <input
