@@ -5,7 +5,7 @@ from models import db, Portfolio, PortfolioStock, Stock, User
 from sqlalchemy.pool import NullPool
 import oracledb
 from flask_bcrypt import Bcrypt
-from flask_jwt_extended import create_access_token, jwt_required, JWTManager
+from flask_jwt_extended import create_access_token, jwt_required, JWTManager, get_jwt_identity
 
 app = Flask(__name__)
 bcrypt = Bcrypt(app)
@@ -76,38 +76,66 @@ def get_portfolio():
     return jsonify({"portfolio": portfolio})
 
 @app.route('/add-to-portfolio', methods=['POST'])
+@jwt_required()
 def add_to_portfolio():
+    current_user_name = get_jwt_identity()
+    user = User.query.filter_by(name=current_user_name).first()
+
+    if not user:
+        return jsonify({"error": "User not found"}), 404
+
     data = request.json
     symbol = data.get('symbol')
-    quantity = int(data.get('quantity', 0))
+    quantity = data.get('quantity', 0)
 
     if not symbol or quantity <= 0:
         return jsonify({"error": "Invalid symbol or quantity"}), 400
 
-    stock = next((item for item in portfolio if item['symbol'] == symbol), None)
+    stock = Stock.query.filter_by(symbol=symbol).first()
+    if not stock:
+        stock = Stock(symbol=symbol)
+        db.session.add(stock)
+        db.session.commit()
 
-    if stock:
-        # Update quantity for the existing stock
-        stock['quantity'] += quantity
+    portfolio = Portfolio.query.filter_by(user_id=user.user_id).first()
+    if not portfolio:
+        portfolio = Portfolio(user_id=user.user_id)
+        db.session.add(portfolio)
+        db.session.commit()
+
+    portfolio_stock = PortfolioStock.query.filter_by(portfolio_id=portfolio.portfolio_id, stock_id=stock.stock_id).first()
+    if portfolio_stock:
+        portfolio_stock.quantity += quantity
     else:
-        # Add a new stock to the portfolio
-        portfolio.append({'symbol': symbol, 'quantity': quantity})
+        portfolio_stock = PortfolioStock(portfolio_id=portfolio.portfolio_id, stock_id=stock.stock_id, quantity=quantity)
+        db.session.add(portfolio_stock)
 
-    return jsonify({"message": "Stock updated in the portfolio successfully"}), 200
+    db.session.commit()
+    return jsonify({"message": "Stock added to portfolio successfully"})
 
 @app.route('/delete-from-portfolio', methods=['POST'])
+@jwt_required()
 def delete_from_portfolio():
+    current_user_name = get_jwt_identity()
+    user = User.query.filter_by(name=current_user_name).first()
+
+    if not user:
+        return jsonify({"error": "User not found"}), 404
+
     data = request.json
     symbol = data.get('symbol')
 
-    stock_index = next((index for (index, d) in enumerate(portfolio) if d['symbol'] == symbol), None)
+    stock = Stock.query.filter_by(symbol=symbol).first()
+    if not stock:
+        return jsonify({"error": "Stock not found"}), 404
 
-    if stock_index is not None:
-        # Remove the stock from the portfolio
-        del portfolio[stock_index]
-        return jsonify({"message": "Stock removed from the portfolio successfully"}), 200
+    portfolio_stock = PortfolioStock.query.filter_by(portfolio_id=user.portfolios[0].portfolio_id, stock_id=stock.stock_id).first()
+    if portfolio_stock:
+        db.session.delete(portfolio_stock)
+        db.session.commit()
+        return jsonify({"message": "Stock removed from portfolio successfully"})
     else:
-        return jsonify({"error": "Stock not found in the portfolio"}), 404
+        return jsonify({"error": "Stock not found in portfolio"}), 404
     
 
 @app.route('/symbol/<symbol>')
