@@ -76,8 +76,13 @@ const Homepage = () => {
     navigate("/login"); // Redirect to the login page
   };
 
+  const username = localStorage.getItem("username");
+
   return (
     <div>
+      <div className="greeting">
+        Hello 👋, <span className="username">@{username}</span>
+      </div>
       <h1 style={{ textAlign: "center" }}>Welcome to WealthWise</h1>
       <p style={{ textAlign: "center" }}>
         Your trusted platform for managing your investment portfolio.

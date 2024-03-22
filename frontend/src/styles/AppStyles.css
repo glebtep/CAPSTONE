@@ -225,8 +225,12 @@ input[type="number"] {
 .greeting {
   position: absolute;
   top: 0;
-  left: 0;
+  right: 0; /* Changed from left to right */
   margin: 10px;
   font-size: 18px;
   font-weight: bold;
+}
+
+.greeting .username {
+  color: burgundy; /* Adds color to the username */
 }

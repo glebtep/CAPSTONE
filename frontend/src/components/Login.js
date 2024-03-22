@@ -18,6 +18,8 @@ function Login({ setIsLoggedIn }) {
       console.log(response.data.message);
       // Redirect to homepage or another protected route
       localStorage.setItem("token", response.data.access_token);
+      // For greeting
+      localStorage.setItem("username", name);
       setIsLoggedIn(true);
       // Redirect to homepage or another protected route
       navigate("/");
