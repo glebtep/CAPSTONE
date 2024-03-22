@@ -30,7 +30,7 @@ Ensure you have an internet connection to access the website and interact with t
    - **Username**: glebtep
    - **Password**: 1234567
 
-2. **Viewing Your Portfolio**: Upon successful login, you'll be directed to your portfolio overview, displaying your current investments.
+2. **Viewing Your Portfolio**: Upon successful login, you'll be directed to homepage, where you can click on the button 'Portfolio' that is displaying your current investments.
 
 3. **Adding Stocks**:
 
@@ -48,10 +48,6 @@ Ensure you have an internet connection to access the website and interact with t
    - Click on any stock symbol in your portfolio to view detailed price trends and historical data.
 
 6. **Logging Out**: Securely log out of your session by clicking the 'Logout' button at any time.
-
-## Support
-
-For support, please contact the platform administrator at support@wealthwise.com.
 
 ## Disclaimer
 
