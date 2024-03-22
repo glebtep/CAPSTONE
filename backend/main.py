@@ -239,16 +239,23 @@ def get_symbol_data(symbol):
 
 @app.route('/signup', methods=['POST'])
 def signup():
-    print("Login route hit")
     data = request.json
     user = User.query.filter_by(name=data['name']).first()
     if user:
         return jsonify({'message': 'User already exists'}), 400
+    
+    # Create new User instance
     new_user = User(name=data['name'])
     new_user.set_password(data['password'])
     db.session.add(new_user)
     db.session.commit()
-    return jsonify({'message': 'User created successfully'}), 201
+    
+    # Automatically create a portfolio for the new user
+    new_portfolio = Portfolio(user_id=new_user.user_id)
+    db.session.add(new_portfolio)
+    db.session.commit()
+
+    return jsonify({'message': 'User and portfolio created successfully'}), 201
 
 @app.route('/login', methods=['POST'])
 def login():
