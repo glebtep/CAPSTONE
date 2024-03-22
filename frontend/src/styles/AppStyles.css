@@ -180,7 +180,7 @@ input[type="number"] {
   margin-right: 5px; /* Space between input and button */
 }
 
-.add-to-portfolio-btn {
+.add-btn {
   padding: 5px 10px; /* Adjust padding as needed */
 }
 
@@ -220,4 +220,13 @@ input[type="number"] {
 
 .form-button:hover {
   background-color: #800020; /* Burgundy for button hover */
+}
+
+.greeting {
+  position: absolute;
+  top: 0;
+  left: 0;
+  margin: 10px;
+  font-size: 18px;
+  font-weight: bold;
 }

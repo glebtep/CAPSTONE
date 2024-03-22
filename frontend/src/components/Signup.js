@@ -8,13 +8,10 @@ function Signup() {
   const handleSignup = async (e) => {
     e.preventDefault();
     try {
-      const response = await axios.post(
-        "http://mcsbt-integration-glebtep.oa.r.appspot.com/signup",
-        {
-          name,
-          password,
-        }
-      );
+      const response = await axios.post("http://127.0.0.1:5000/signup", {
+        name,
+        password,
+      });
       console.log(response.data.message);
       window.location.href = "/login";
       // Redirect to login page or elsewhere after successful signup

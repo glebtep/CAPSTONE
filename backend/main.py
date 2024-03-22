@@ -1,4 +1,4 @@
-from flask import Flask, jsonify, Response, request, session
+from flask import Flask, jsonify, Response, request
 from flask_cors import CORS
 import requests
 from models import db, Portfolio, PortfolioStock, Stock, User
@@ -6,9 +6,13 @@ from sqlalchemy.pool import NullPool
 import oracledb
 from flask_bcrypt import Bcrypt
 from flask_jwt_extended import create_access_token, jwt_required, JWTManager, get_jwt_identity
+from sqlalchemy.exc import SQLAlchemyError # i was using it to fix errors in db
+from datetime import datetime
+import logging
 
 app = Flask(__name__)
 bcrypt = Bcrypt(app)
+#My secret key (I know it should be hidden, but kept it not to overcomplicate the code):
 app.config['JWT_SECRET_KEY'] = b'0S=\xa0\xa8trRj\x8e\xe5\xf2\x87\xefLC\xbb\x08\xed\xf1\xccF\xe8\xa5'
 jwt = JWTManager(app) 
 
@@ -40,12 +44,14 @@ MAX_STOCKS = 777
 #Dynamic portfolio
 portfolio = []
 
+#Add simple message 
 @app.route('/')
 def homepage():
     return "Welcome to WealthWise - Your trusted platform for managing your investment portfolio"
 
 @app.route('/all-stocks')
 def get_all_stocks():
+    """Fetches all stocks listing status using a third-party API and streams it back to the client."""
     url = f"{STOCK_DATA_URL}?function=LISTING_STATUS&apikey={API_KEY}"
     try:
         def generate():
@@ -72,68 +78,100 @@ def get_all_stocks():
         return jsonify(error=str(err)), 500
     
 @app.route('/portfolio', methods=['GET'])
-def get_portfolio():
-    return jsonify({"portfolio": portfolio})
-
-@app.route('/add-to-portfolio', methods=['POST'])
 @jwt_required()
-def add_to_portfolio():
-    current_user_name = get_jwt_identity()
-    user = User.query.filter_by(name=current_user_name).first()
-
+def get_portfolio():
+    """Fetches the current user's portfolio, displaying each stock's symbol, quantity, and acquisition price."""
+    current_user_id = get_jwt_identity()
+    user = User.query.filter_by(user_id=current_user_id).first()
     if not user:
         return jsonify({"error": "User not found"}), 404
 
-    data = request.json
-    symbol = data.get('symbol')
-    quantity = data.get('quantity', 0)
+    portfolio_stocks = PortfolioStock.query.filter_by(portfolio_id=user.portfolios.portfolio_id).all()
+    portfolio_data = [{
+        "symbol": stock.stock.symbol,
+        "quantity": stock.quantity,
+        "acquisition_price": stock.acquisition_price
+    } for stock in portfolio_stocks]
 
-    if not symbol or quantity <= 0:
-        return jsonify({"error": "Invalid symbol or quantity"}), 400
+    return jsonify({"portfolio": portfolio_data})
 
+
+def get_or_create_stock(symbol, name=None):
+    """Utility function to get or create a stock entry."""
     stock = Stock.query.filter_by(symbol=symbol).first()
     if not stock:
-        stock = Stock(symbol=symbol)
+        stock = Stock(symbol=symbol, name=name)
         db.session.add(stock)
         db.session.commit()
+    return stock
 
-    portfolio = Portfolio.query.filter_by(user_id=user.user_id).first()
-    if not portfolio:
-        portfolio = Portfolio(user_id=user.user_id)
-        db.session.add(portfolio)
-        db.session.commit()
-
-    portfolio_stock = PortfolioStock.query.filter_by(portfolio_id=portfolio.portfolio_id, stock_id=stock.stock_id).first()
-    if portfolio_stock:
-        portfolio_stock.quantity += quantity
-    else:
-        portfolio_stock = PortfolioStock(portfolio_id=portfolio.portfolio_id, stock_id=stock.stock_id, quantity=quantity)
-        db.session.add(portfolio_stock)
-
-    db.session.commit()
-    return jsonify({"message": "Stock added to portfolio successfully"})
-
-@app.route('/delete-from-portfolio', methods=['POST'])
+@app.route('/add', methods=['POST'])
 @jwt_required()
-def delete_from_portfolio():
-    current_user_name = get_jwt_identity()
-    user = User.query.filter_by(name=current_user_name).first()
-
+def add_stock_to_portfolio():
+    """Adds a specified stock to the current user's portfolio."""
+    current_user_id = get_jwt_identity()
+    user = User.query.filter_by(user_id=current_user_id).first()
     if not user:
         return jsonify({"error": "User not found"}), 404
 
     data = request.json
     symbol = data.get('symbol')
+    name = data.get('name', 'Unknown Stock')  # Provide a default name if not provided
+    quantity = data.get('quantity', 0)
+    # Default acquisition price and date are set to 0.0 and current date respectively if not provided
+    acquisition_price = data.get('acquisition_price', 0.0)
+    acquisition_date = data.get('acquisition_date', datetime.utcnow().date())
+
+    if not symbol or not isinstance(quantity, int) or quantity <= 0:
+        return jsonify({"error": "Invalid symbol or quantity"}), 400
+
+    # Use the utility function to get or create the stock
+    stock = get_or_create_stock(symbol, name)
+    portfolio_stock = PortfolioStock.query.filter_by(portfolio_id=user.portfolios.portfolio_id, stock_id=stock.stock_id).first()
+
+    if portfolio_stock:
+        # If the stock already exists in the portfolio, increase the quantity
+        portfolio_stock.quantity += quantity
+    else:
+        # If the stock is not in the portfolio, create a new entry
+        portfolio_stock = PortfolioStock(portfolio_id=user.portfolios.portfolio_id, stock_id=stock.stock_id, quantity=quantity, acquisition_price=acquisition_price, acquisition_date=acquisition_date)
+        db.session.add(portfolio_stock)
+
+    try:
+        db.session.commit()
+        return jsonify({"message": "Stock added to portfolio successfully"}), 200
+    except Exception as e:
+        logging.error(f"Error adding stock to portfolio: {e}")
+        db.session.rollback()
+        return jsonify({"error": "An error occurred while adding stock to portfolio"}), 500
+
+    
+@app.route('/remove', methods=['POST'])
+@jwt_required()
+def delete_from_portfolio():
+    current_user_id = get_jwt_identity()
+    data = request.json
+    symbol = data.get('symbol')
+
+    user = User.query.get(current_user_id)
+    if not user:
+        return jsonify({"error": "User not found"}), 404
 
     stock = Stock.query.filter_by(symbol=symbol).first()
     if not stock:
         return jsonify({"error": "Stock not found"}), 404
 
-    portfolio_stock = PortfolioStock.query.filter_by(portfolio_id=user.portfolios[0].portfolio_id, stock_id=stock.stock_id).first()
+    # Adjusted from portfolio.id to portfolio.portfolio_id
+    portfolio = Portfolio.query.filter_by(user_id=current_user_id).first()
+    if not portfolio:
+        return jsonify({"error": "Portfolio not found"}), 404
+
+    # Adjusted from portfolio.id to portfolio.portfolio_id and stock.id to stock.stock_id
+    portfolio_stock = PortfolioStock.query.filter_by(portfolio_id=portfolio.portfolio_id, stock_id=stock.stock_id).first()
     if portfolio_stock:
         db.session.delete(portfolio_stock)
         db.session.commit()
-        return jsonify({"message": "Stock removed from portfolio successfully"})
+        return jsonify({"message": "Stock removed from the portfolio successfully"}), 200
     else:
         return jsonify({"error": "Stock not found in portfolio"}), 404
     
@@ -217,9 +255,11 @@ def login():
     data = request.json
     user = User.query.filter_by(name=data['name']).first()
     if user and user.check_password(data['password']):
-        access_token = create_access_token(identity=data['name'])
+        # Use user.user_id as the JWT identity
+        access_token = create_access_token(identity=user.user_id)
         return jsonify(access_token=access_token), 200
-    return jsonify({'message': 'Invalid username or password'}), 401
+    else:
+        return jsonify({'message': 'Invalid username or password'}), 401
 
 
 @app.route('/protected', methods=['GET'])
@@ -227,5 +267,7 @@ def login():
 def protected():
     return jsonify({'message': 'Access granted to protected route'})
 
+    
 if __name__ == '__main__':
     app.run(debug=True)
+

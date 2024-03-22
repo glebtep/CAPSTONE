@@ -15,16 +15,14 @@ const Homepage = () => {
         .slice(1)
         .map((line) => {
           const [symbol, name] = line.split(",");
-          return { symbol, name }; // Removed quantity property as it's not needed for listing
+          return { symbol, name, quantity: 0 };
         })
         .filter((stock) => stock.symbol && stock.name);
     };
 
     const fetchStocks = async () => {
       try {
-        const response = await axios.get(
-          "http://mcsbt-integration-glebtep.oa.r.appspot.com/all-stocks"
-        );
+        const response = await axios.get("http://127.0.0.1:5000/all-stocks");
         const parsedData = parseCSV(response.data);
         setAllStocks(parsedData);
         setFilteredStocks(parsedData);
@@ -46,15 +44,22 @@ const Homepage = () => {
     setFilteredStocks(filtered);
   };
 
-  const addToPortfolio = async (symbol, quantity) => {
+  const addToPortfolio = async (symbol, name, quantity) => {
     // Ensure quantity is a positive number before sending the request
     if (quantity > 0) {
       try {
         await axios.post(
-          "http://mcsbt-integration-glebtep.oa.r.appspot.com/add-to-portfolio",
+          "http://127.0.0.1:5000/add",
           {
             symbol,
+            name,
             quantity,
+          },
+          {
+            headers: {
+              // Include the JWT token in the Authorization header
+              Authorization: `Bearer ${localStorage.getItem("token")}`,
+            },
           }
         );
         navigate("/portfolio"); // Redirect to portfolio page to view added stock
@@ -112,13 +117,23 @@ const Homepage = () => {
                 type="number"
                 className="stock-quantity-input"
                 min="1"
-                defaultValue="0"
+                value={stock.quantity}
                 onChange={(e) => {
-                  stock.quantity = parseInt(e.target.value) || 0;
+                  const value = parseInt(e.target.value) || 0;
+                  setFilteredStocks((prevStocks) => {
+                    return prevStocks.map((prevStock, idx) => {
+                      if (idx === index) {
+                        return { ...prevStock, quantity: value };
+                      }
+                      return prevStock;
+                    });
+                  });
                 }}
               />
               <button
-                onClick={() => addToPortfolio(stock.symbol, stock.quantity)}
+                onClick={() =>
+                  addToPortfolio(stock.symbol, stock.name, stock.quantity)
+                }
               >
                 Add to Portfolio
               </button>

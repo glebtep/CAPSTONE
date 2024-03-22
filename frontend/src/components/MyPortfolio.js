@@ -34,14 +34,11 @@ const MyPortfolio = () => {
   useEffect(() => {
     const fetchPortfolioData = async () => {
       try {
-        const response = await axios.get(
-          `http://mcsbt-integration-glebtep.oa.r.appspot.com/portfolio`,
-          {
-            headers: {
-              Authorization: `Bearer ${localStorage.getItem("token")}`,
-            },
-          }
-        );
+        const response = await axios.get(`http://127.0.0.1:5000/portfolio`, {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+        });
         const portfolioData = response.data.portfolio || [];
         setPortfolio(portfolioData);
         calculateTotalPortfolioValue(portfolioData);
@@ -54,11 +51,13 @@ const MyPortfolio = () => {
   }, [calculateTotalPortfolioValue]); // useEffect depends on calculateTotalPortfolioValue
 
   const deleteStock = async (symbol) => {
+    console.log(`Attempting to delete stock: ${symbol}`);
     try {
       await axios.post(
-        `http://mcsbt-integration-glebtep.oa.r.appspot.com/delete-from-portfolio`,
+        `http://127.0.0.1:5000/remove`,
+        { symbol },
         {
-          symbol,
+          headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
         }
       );
       const updatedPortfolio = portfolio.filter(
@@ -74,10 +73,13 @@ const MyPortfolio = () => {
   const addMoreStock = async (symbol, quantity) => {
     try {
       await axios.post(
-        `http://mcsbt-integration-glebtep.oa.r.appspot.com/add-to-portfolio`,
+        `http://127.0.0.1:5000/add`,
         {
           symbol,
           quantity,
+        },
+        {
+          headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
         }
       );
       const updatedPortfolio = portfolio.map((item) => {

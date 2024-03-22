@@ -11,13 +11,10 @@ function Login({ setIsLoggedIn }) {
   const handleLogin = async (e) => {
     e.preventDefault();
     try {
-      const response = await axios.post(
-        "http://mcsbt-integration-glebtep.oa.r.appspot.com/login",
-        {
-          name,
-          password,
-        }
-      );
+      const response = await axios.post("http://127.0.0.1:5000/login", {
+        name,
+        password,
+      });
       console.log(response.data.message);
       // Redirect to homepage or another protected route
       localStorage.setItem("token", response.data.access_token);
